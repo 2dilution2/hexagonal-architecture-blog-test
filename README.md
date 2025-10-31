@@ -107,7 +107,7 @@ Server will start at [http://localhost:3000](http://localhost:3000)
 ## 🧱 Services Overview
 
 ### `AuthService`
-- Handles sign-up, login, and token refresh
+- Handles signup, login, and token refresh
 - Uses `UserService`, `PasswordHasher`, and `TokenSigner`
 
 ### `UserService`
