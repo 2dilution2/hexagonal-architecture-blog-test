@@ -5,7 +5,7 @@ export async function authRoutes(
   opts: FastifyPluginOptions & { services: any }
 ) {
   const { services } = opts;
-  const { signUp, login, refresh } = services;
+  const { authService } = services;
 
   fastify.post("/signup", {
     schema: {
@@ -59,7 +59,7 @@ export async function authRoutes(
   }, async (req, res) => {
     try {
         const body = req.body as any;
-        const result = await signUp.execute({
+        const result = await authService.signUp({
             email: body?.email,
             password: body?.password,
             displayName: body?.displayName,
@@ -122,9 +122,9 @@ export async function authRoutes(
   }, async (req, res) => {
     try {
         const body = req.body as any;
-        const { accessToken, refreshToken } = await login.execute({
-        email: body?.email,
-        password: body?.password,
+        const { accessToken, refreshToken } = await authService.login({
+          email: body?.email,
+          password: body?.password,
         });
         return res.send({ accessToken, refreshToken });
     } catch (e: any) {
@@ -182,7 +182,7 @@ export async function authRoutes(
   }, async (req, res) => {
     try {
         const { refreshToken } = req.body as any;
-        const { accessToken } = await refresh.execute(refreshToken);
+        const { accessToken } = await authService.refresh({ refreshToken });
         return res.send({ accessToken });
     } catch (e: any) {
         if (e?.message === "INVALID_REFRESH_TOKEN") {

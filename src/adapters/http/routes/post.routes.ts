@@ -6,7 +6,7 @@ export async function postRoutes(
   opts: FastifyPluginOptions & { services: any; authGuard: any }
 ) {
     const { services, authGuard } = opts;
-    const { createPost, listPosts, getPost, updatePost, deletePost } = services;
+    const { postService } = services;
   
     // Create
     fastify.post("/posts", {
@@ -47,11 +47,11 @@ export async function postRoutes(
     }, async (req, res) => {
       try {
         const body = req.body as any;
-        const result = await createPost!.execute({
-          authorId: req.user!.sub,
-          title: body?.title,
-          content: body?.content,
-          published: body?.published ?? true,
+        const result = await postService.create({
+            authorId: req.user!.sub,
+            title: body?.title,
+            content: body?.content,
+            published: body?.published ?? true,
         });
         return res.code(201).send({ postId: result.id });
       } catch (e: any) {
@@ -96,8 +96,8 @@ export async function postRoutes(
         },
       },
     }, async (req, res) => {
-      const { authorId } = req.query as any ?? {};
-      const list = await listPosts.execute(authorId);
+      const { authorId } = (req.query as any) ?? {};
+      const list = authorId ? await postService.listByAuthor(authorId) : await postService.list();
       return res.send({ posts: list });
     });
   
@@ -156,7 +156,7 @@ export async function postRoutes(
     }, async (req, res) => {
       try {
         const { id } = req.params as any;
-        const post = await getPost.execute(id);
+        const post = await postService.get(id);
         return res.send({ post });
       } catch (e: any) {
           if (e?.message === "POST_NOT_FOUND") {
@@ -230,7 +230,7 @@ export async function postRoutes(
       try {
         const { id } = req.params as any;
         const body = req.body as any;
-        const result = await updatePost.execute({
+        const result = await postService.update({
             id,
             actorId: req.user!.sub,
             title: body?.title,
@@ -304,7 +304,7 @@ export async function postRoutes(
     }, async (req, res) => {
       try {
         const { id } = req.params as any;
-        const result = await deletePost.execute(id, req.user!.sub);
+        const result = await postService.delete(id, req.user!.sub);
         return res.send(result);
       } catch (e: any) {
         if (e?.message === "POST_NOT_FOUND") return res.code(404).send({ type:"about:blank", title:"Not Found", detail:"Post not found" });

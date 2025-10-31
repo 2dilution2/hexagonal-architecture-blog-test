@@ -25,7 +25,7 @@ export function buildOpenApiDoc() {
     // Auth routes
     registry.registerPath({
         method: "post",
-        path: "/api/sign-up",
+        path: "/api/signup",
         tags: ["Auth"],
         request: {
             body: {
