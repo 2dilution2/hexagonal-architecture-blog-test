@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
+import { buildOpenApiDoc } from "./openapi";
 import { makeAuthGuard } from "./auth-guard";
 import { authRoutes } from "./routes/auth.routes";
 import { userRoutes } from "./routes/user.routes";
@@ -10,32 +11,8 @@ export function buildServer(services: any) {
     const app = Fastify({ logger: true, ajv: { customOptions: { strict: false } } });
     const authGuard = makeAuthGuard(services.jwt);
 
-    // Swagger 설정
-    app.register(swagger, {
-        openapi: {
-            openapi: "3.0.0",
-            info: {
-                title: "Hexagonal Template API",
-                description: "API documentation for Hexagonal Template",
-                version: "1.0.0",
-            },
-            servers: [
-                {
-                    url: "http://localhost:3000",
-                    description: "Local development server",
-                },
-            ],
-            components: {
-                securitySchemes: {
-                    bearerAuth: {
-                        type: "http",
-                        scheme: "bearer",
-                        bearerFormat: "JWT",
-                    },
-                },
-            },
-        },
-    });
+    // Swagger (OpenAPI from Zod)
+    app.register(swagger, { openapi: buildOpenApiDoc() as any });
 
     app.register(swaggerUi, {
         routePrefix: "/docs",
