@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
+extendZodWithOpenApi(z);
 
 export const CreatePostDto = z.object({
   authorId: z.string().uuid(),
