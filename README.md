@@ -77,38 +77,34 @@ Hexagonal Architecture는 **포트(Port)와 어댑터(Adapter)** 패턴으로도
 ### 헥사곤 다이어그램 (Mermaid)
 
 ```mermaid
-flowchart TB
-  subgraph AD[Adapters (HTTP, DB, Crypto)]
-    http[HTTP]
-    db[DB]
-    crypto[Crypto]
-  end
+graph TD
+  %% Adapters -> Ports -> Application -> Domain
+  http[HTTP] --> ports[[Ports]]
+  db[DB] --> ports
+  crypto[Crypto] --> ports
 
-  subgraph P[Ports]
-    userRepo[UserRepo]
-    postRepo[PostRepo]
-    hasher[PasswordHasher]
-    signer[TokenSigner]
-  end
+  ports --> app[Application]
+  app --> domain[Domain]
 
-  subgraph A[Application (Services)]
+  %% Services detail (optional)
+  subgraph Services
     authSvc[AuthService]
     userSvc[UserService]
     postSvc[PostService]
   end
+  app -.uses .-> authSvc
+  app -.uses .-> userSvc
+  app -.uses .-> postSvc
 
-  subgraph D[Domain (Entities)]
+  %% Domain entities detail (optional)
+  subgraph Entities
     user[User]
     post[Post]
     refresh[RefreshToken]
   end
-
-  http --> P
-  db --> P
-  crypto --> P
-
-  P --> A
-  A --> D
+  domain -.contains .-> user
+  domain -.contains .-> post
+  domain -.contains .-> refresh
 ```
 
 ---
