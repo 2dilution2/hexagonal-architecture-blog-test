@@ -1,98 +1,112 @@
-# 📋 프로젝트 개선 TODO
+# 📦 템플릿용 TODO (Boilerplate 기준)
 
-## 🧪 테스트
-
-### 우선순위: 높음
-- [ ] **테스트 프레임워크 설정**
-  - [ ] Vitest 또는 Jest 설치 및 설정
-  - [ ] 테스트 환경 구성 (`vitest.config.ts` 또는 `jest.config.js`)
-  - [ ] 테스트 스크립트 추가 (`package.json`)
-
-- [ ] **단위 테스트 작성**
-  - [ ] `UserService` 테스트
-    - [ ] 회원가입 성공 케이스
-    - [ ] 이메일 중복 체크
-    - [ ] 비밀번호 해싱 검증
-  - [ ] `AuthService` 테스트
-    - [ ] 로그인 성공/실패
-    - [ ] 토큰 생성 및 검증
-    - [ ] 리프레시 토큰 로직
-  - [ ] `PostService` 테스트
-    - [ ] CRUD 작업
-    - [ ] 권한 검증 (소유자만 수정/삭제)
-
-- [ ] **인프라 어댑터 테스트**
-  - [ ] `MemoryUserRepo` 테스트
-  - [ ] `PostgresUserRepo` 통합 테스트
-  - [ ] `BcryptHasher` 테스트
-  - [ ] `JwtSigner` 테스트
-
-- [ ] **통합 테스트**
-  - [ ] HTTP 라우트 테스트 (Fastify)
-  - [ ] 인증 플로우 E2E 테스트
-  - [ ] 게시글 CRUD E2E 테스트
+> 목적: 이 리포를 “바로 가져다 쓰는” 보일러플레이트로 다듬는다. 최소 설정으로 동작하고, 어댑터/DB 교체가 쉽도록 스캐폴딩·스크립트·문서·CI를 포함한다.
 
 ---
 
-## 🚨 에러 핸들링
+## 0) 프로젝트 메타
 
-### 우선순위: 높음
-- [ ] **커스텀 에러 클래스 정의**
-  - [ ] `DomainError` (비즈니스 로직 에러)
-  - [ ] `ValidationError` (입력 검증 에러)
-  - [ ] `NotFoundError` (리소스 없음)
-  - [ ] `UnauthorizedError` (인증 실패)
-  - [ ] `ForbiddenError` (권한 없음)
-
-- [ ] **에러 응답 표준화**
-  - [ ] 에러 응답 DTO 정의
-  - [ ] HTTP 상태 코드 매핑
-  - [ ] 에러 메시지 포맷 통일
-
-- [ ] **에러 로깅**
-  - [ ] 에러 발생 시 구조화된 로깅
-  - [ ] 스택 트레이스 관리
-  - [ ] 민감한 정보 필터링
+- [ ] `README`에 “템플릿 사용 가이드” 섹션 추가 (복제→리네임→환경변수)
+- [ ] `LICENSE` 검토(ISC 유지 or MIT로 변경)
+- [ ] 이슈/PR 템플릿 추가 (`.github/ISSUE_TEMPLATE`, `PULL_REQUEST_TEMPLATE.md`)
+- [ ] 기본 라벨 세트 정의 (good first issue 등)
 
 ---
 
-## ⚙️ 환경 설정
+## 1) 개발 환경 부트스트랩
 
-### 우선순위: 중간
-- [ ] **환경 변수 관리**
-  - [ ] `.env.example` 파일 생성
-  - [ ] 환경별 설정 파일 분리 (`.env.dev`, `.env.prod`, `.env.test`)
-  - [ ] 환경 변수 검증 스키마 (Zod)
-
-- [ ] **설정 관리 모듈**
-  - [ ] `src/infra/config.ts` 생성
-  - [ ] 타입 안전한 설정 로더
-  - [ ] 기본값 설정
+- [ ] `.env.example` 제공 (DATABASE_URL, JWT_SECRET, PORT)
+- [ ] `pnpm`/`npm` 스크립트 정리: `dev`, `build`, `start`, `lint`, `format`, `test`, `test:watch`
+- [ ] Prettier/ESLint 기본 설정 동봉 (템플릿 친화 최소 규칙)
+- [ ] Git hooks (Husky + lint-staged) 옵션 제공 – pre-commit: lint & format
 
 ---
 
-## 📊 로깅
+## 2) 데이터베이스/Prisma
 
-### 우선순위: 중간
-- [ ] **구조화된 로깅**
-  - [ ] Pino 또는 Winston 도입
-  - [ ] 로그 레벨 관리 (DEBUG, INFO, WARN, ERROR)
-  - [ ] JSON 형식 로그 출력
-
-- [ ] **HTTP 로깅 미들웨어**
-  - [ ] 요청/응답 로깅
-  - [ ] 요청 ID 추적
-  - [ ] 성능 메트릭 (응답 시간)
+- [ ] `prisma` 스키마 점검(샘플 모델 최소화: User/Post/RefreshToken)
+- [ ] `seed` 스크립트 추가 (`npm run seed`) 및 샘플 데이터
+- [ ] `docker-compose.yml`로 `postgres:15` 로컬 구동 제공
+  - [ ] `npm run db:up` / `npm run db:down` or Makefile
 
 ---
 
-## 💉 의존성 주입
+## 3) 실행/배포 컨테이너
 
-### 우선순위: 낮음
-- [ ] **DI 프레임워크 도입**
-  - [ ] `tsyringe` 또는 `typedi` 선택 및 설치
-  - [ ] 데코레이터 기반 의존성 주입
-  - [ ] 컨테이너 설정 마이그레이션
+- [ ] `Dockerfile` (node:20-alpine) 멀티스테이지 빌드
+- [ ] `docker-compose.yml` (api + db) 개발용
+- [ ] 헬스체크(`/healthz`)와 env 주입 문서화
+
+---
+
+## 4) 테스트 스캐폴딩
+
+- [ ] Vitest 기본 설정(`vitest.config.ts`) + 스크립트 연결
+- [ ] `Memory*Repo` 기반 단위 테스트 예제 3개
+  - [ ] `UserService` happy/duplicate
+  - [ ] `AuthService` login/refresh
+  - [ ] `PostService` CRUD/권한
+- [ ] HTTP 통합 테스트 예제 (Fastify inject)
+- [ ] 커버리지 스크립트 (`test:cov`)
+
+---
+
+## 5) 문서/예제 API
+
+- [ ] OpenAPI UI(/docs) on/off 플래그 (env)
+- [ ] “어댑터 교체 가이드” 문서화
+  - [ ] `MemoryRepo` ↔ `PostgresRepo` 스위칭 방법
+  - [ ] DI 컨테이너에서 바꾸는 한 줄 코드 예시
+
+---
+
+## 6) 보안/운영 기본값
+
+- [ ] 간단 에러 응답 표준화 미들웨어
+- [ ] Pino 로깅 + 요청 ID
+- [ ] `@fastify/rate-limit` 토글
+- [ ] CORS 안전 기본값 (origin env)
+
+---
+
+## 7) CI 템플릿
+
+- [ ] GitHub Actions: `ci.yml`
+  - [ ] node setup + install cache
+  - [ ] lint / build / test / prisma format/check
+  - [ ] (옵션) docker build
+- [ ] PR 체크 배지 추가
+
+---
+
+## 8) 코드 구조(템플릿 친화)
+
+- [ ] `src/infra/config.ts` 타입세이프 env 로더(Zod)
+- [ ] `src/infra/container.ts`에서 DB 토글(env `DB=memory|postgres`)
+- [ ] `src/adapters/http/server.ts` Swagger 등록 토글
+- [ ] 폴더-by-feature 안내 주석(README 링크)
+
+---
+
+---
+
+## 9) 선택적 추가(옵션)
+
+- [ ] 예제 UI 클라이언트(`examples/next-app`)에서 /api 연동
+- [ ] Makefile 제공 (dev, test, lint, db:up/down)
+- [ ] Renovate/Dependabot 설정
+- [ ] ADR 템플릿(`docs/adr/0001-use-hexagonal.md`)
+
+---
+
+---
+
+## 완료 기준 (Definition of Done)
+
+- [ ] 템플릿 복제 후 `npm i && npm run dev` 바로 동작
+- [ ] `.env.example`만 채워도 핵심 기능(인증/게시글) 실행
+- [ ] `npm test` 성공 및 커버리지 리포트 생성
+- [ ] README “템플릿 사용 가이드”에 교체 포인트 명시(DI/DB/HTTP)
 
 ---
 
