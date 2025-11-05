@@ -11,100 +11,21 @@ Hexagonal Architecture는 **포트(Port)와 어댑터(Adapter)** 패턴으로도
 
 ### 핵심 원칙
 
-```
-┌─────────────────────────────────────────┐
-│         Adapters (외부 세계)            │
-│  ┌──────────┐  ┌──────────┐          │
-│  │   HTTP   │  │  Database │  ...     │
-│  └────┬─────┘  └────┬─────┘          │
-└───────┼─────────────┼──────────────────┘
-        │             │
-        ↓             ↓
-┌─────────────────────────────────────────┐
-│         Ports (인터페이스)               │
-│  ┌──────────┐  ┌──────────┐          │
-│  │ UserRepo │  │ Hasher   │  ...     │
-│  └────┬─────┘  └────┬─────┘          │
-└───────┼─────────────┼──────────────────┘
-        │             │
-        ↓             ↓
-┌─────────────────────────────────────────┐
-│      Application (비즈니스 로직)         │
-│  ┌──────────┐  ┌──────────┐          │
-│  │ AuthService│ │PostService│ ...     │
-│  └────┬─────┘  └────┬─────┘          │
-└───────┼─────────────┼──────────────────┘
-        │             │
-        ↓             ↓
-┌─────────────────────────────────────────┐
-│         Domain (도메인 모델)             │
-│  ┌──────────┐  ┌──────────┐          │
-│  │   User   │  │   Post   │  ...     │
-│  └──────────┘  └──────────┘          │
-└─────────────────────────────────────────┘
-```
+- 외부(Adapters) → Ports → Application → Domain으로만 의존성 이동(단방향)
+- Domain/Application은 프레임워크·인프라에 의존하지 않는 순수 TS 코드
+- Ports는 “계약(인터페이스)”, Adapters는 “구현(기술)”이므로 쉽게 교체 가능
 
-**의존성 방향**: 항상 외부 → 내부  
-**핵심**: 도메인과 애플리케이션 계층은 프레임워크나 인프라에 의존하지 않습니다.
+시각적 개요는 아래 다이어그램을 참고하세요.
 
-### 헥사곤 다이어그램 (ASCII)
-
-```
-                ┌───────────────┐
-          ┌────▶│   Adapters    │◀────┐
-          │     │  (HTTP, DB)   │     │
-          │     └──────┬────────┘     │
-          │            │               │
-          │            ▼               │
-      ┌───┴────────────┴───────────┐   │
-      │          Ports             │   │
-      │ (UserRepo, PostRepo, ... ) │   │
-      └───┬────────────┬───────────┘   │
-          │            │               │
-          ▼            ▼               │
-     ┌───────────────────────────────────┐
-     │          Application              │
-     │  (AuthService, UserService, ...) │
-     └───────────┬───────────────┬──────┘
-                 │               │
-                 ▼               ▼
-            ┌─────────────────────────┐
-            │         Domain          │
-            │   (User, Post, etc.)   │
-            └─────────────────────────┘
-```
-
-### 헥사곤 다이어그램 (Mermaid)
+### 헥사곤 다이어그램
 
 ```mermaid
 graph TD
-  %% Adapters -> Ports -> Application -> Domain
   http[HTTP] --> ports[[Ports]]
   db[DB] --> ports
   crypto[Crypto] --> ports
-
   ports --> app[Application]
   app --> domain[Domain]
-
-  %% Services detail (optional)
-  subgraph Services
-    authSvc[AuthService]
-    userSvc[UserService]
-    postSvc[PostService]
-  end
-  app -.uses .-> authSvc
-  app -.uses .-> userSvc
-  app -.uses .-> postSvc
-
-  %% Domain entities detail (optional)
-  subgraph Entities
-    user[User]
-    post[Post]
-    refresh[RefreshToken]
-  end
-  domain -.contains .-> user
-  domain -.contains .-> post
-  domain -.contains .-> refresh
 ```
 
 ---
