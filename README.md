@@ -215,6 +215,146 @@ export function makeContainer() {
 
 ---
 
+## 🔄 어댑터 교체 가이드
+
+Hexagonal Architecture의 핵심은 **어댑터를 쉽게 교체**할 수 있다는 것입니다. 이 섹션에서는 각 어댑터를 교체하는 방법을 설명합니다.
+
+### 1. 데이터베이스 어댑터 교체
+
+#### 방법 1: 환경변수로 교체 (권장)
+
+가장 간단한 방법은 환경변수 `DB`를 설정하는 것입니다:
+
+```bash
+# .env 파일
+DB=memory        # 메모리 저장소 사용 (테스트용)
+# 또는
+DB=postgres      # PostgreSQL 사용 (프로덕션)
+```
+
+`src/infra/container.ts`에서 자동으로 선택됩니다:
+
+```typescript
+const userRepo: UserRepo =
+  config.DB === "memory" ? new MemoryUserRepo() : new PostgresUserRepo();
+```
+
+#### 방법 2: 코드에서 직접 교체
+
+`src/infra/container.ts`를 직접 수정하여 원하는 구현체를 선택할 수 있습니다:
+
+```typescript
+// src/infra/container.ts
+export function makeContainer() {
+  const config = loadConfig();
+
+  // Memory 구현체 사용
+  const userRepo: UserRepo = new MemoryUserRepo();
+  const postRepo: PostRepo = new MemoryPostRepo();
+  const refreshRepo: RefreshRepo = new MemoryRefreshRepo();
+
+  // 또는 PostgreSQL 구현체 사용
+  // const userRepo: UserRepo = new PostgresUserRepo();
+  // const postRepo: PostRepo = new PostgresPostRepo();
+  // const refreshRepo: RefreshRepo = new PostgresRefreshRepo();
+
+  // ... 나머지 코드
+}
+```
+
+**새로운 데이터베이스 어댑터 추가하기:**
+
+1. 포트 인터페이스 구현 (예: `src/app/ports/user-repo.ts`)
+2. 어댑터 클래스 생성 (예: `src/adapters/db/mongodb-user-repo.ts`)
+3. `container.ts`에서 선택적으로 사용
+
+```typescript
+// src/adapters/db/mongodb-user-repo.ts
+import { UserRepo } from "../../app/ports/user-repo";
+import { User } from "../../domain/user";
+
+export class MongoUserRepo implements UserRepo {
+  async findById(id: string): Promise<User | null> {
+    // MongoDB 구현
+  }
+  // ... 나머지 메서드 구현
+}
+```
+
+### 2. HTTP 어댑터 교체
+
+현재는 Fastify를 사용하고 있지만, Express나 다른 프레임워크로 교체할 수 있습니다:
+
+1. **새 HTTP 어댑터 생성** (`src/adapters/http-express/` 등)
+2. **서비스 인터페이스 유지**: HTTP 어댑터는 `container.ts`에서 반환된 서비스들을 사용
+3. **라우트 핸들러 구현**: 기존 라우트와 동일한 비즈니스 로직 호출
+
+예시 구조:
+
+```
+src/adapters/
+├── http/              # Fastify 구현 (현재)
+│   └── routes/
+└── http-express/      # Express 구현 (새로 추가 가능)
+    └── routes/
+```
+
+**중요**: HTTP 어댑터를 교체해도 `app/` 계층의 서비스 코드는 변경할 필요가 없습니다.
+
+### 3. 암호화 어댑터 교체
+
+비밀번호 해싱이나 토큰 서명 방식을 교체하려면:
+
+#### 비밀번호 해셔 교체
+
+```typescript
+// src/infra/container.ts
+import { BcryptHasher } from "../adapters/crypto/bcrypt-hasher";
+// 또는
+// import { Argon2Hasher } from "../adapters/crypto/argon2-hasher";
+
+const hasher = new BcryptHasher();  // 원하는 구현체로 교체
+```
+
+새로운 해셔를 추가하려면 `PasswordHasher` 포트를 구현하면 됩니다:
+
+```typescript
+// src/adapters/crypto/argon2-hasher.ts
+import { PasswordHasher } from "../../app/ports/password-hasher";
+
+export class Argon2Hasher implements PasswordHasher {
+  async hash(plain: string): Promise<string> {
+    // Argon2 구현
+  }
+  async compare(plain: string, hash: string): Promise<boolean> {
+    // Argon2 비교 구현
+  }
+}
+```
+
+#### 토큰 서명자 교체
+
+```typescript
+// src/infra/container.ts
+import { JwtSigner } from "../adapters/crypto/jwt-signer";
+// 또는
+// import { PasetoSigner } from "../adapters/crypto/paseto-signer";
+
+const jwt = new JwtSigner(config.JWT_SECRET);  // 원하는 구현체로 교체
+```
+
+### 4. 교체 포인트 요약
+
+| 어댑터 타입 | 교체 위치 | 난이도 | 비즈니스 로직 영향 |
+|------------|----------|--------|-------------------|
+| **DB** | `src/infra/container.ts` (환경변수 또는 코드) | ⭐ 쉬움 | ❌ 없음 |
+| **HTTP** | `src/adapters/http/` 또는 새 디렉토리 | ⭐⭐ 보통 | ❌ 없음 |
+| **Crypto** | `src/infra/container.ts` | ⭐ 쉬움 | ❌ 없음 |
+
+**핵심 원칙**: 모든 교체는 `adapters/`와 `infra/container.ts`에서만 이루어지며, `app/`과 `domain/` 계층은 변경되지 않습니다.
+
+---
+
 ## 🚀 시작하기
 
 ### 1. 의존성 설치
@@ -233,7 +373,10 @@ pnpm install
 DATABASE_URL="postgresql://user:password@localhost:5432/hexagonal_db"
 JWT_SECRET="your-secret-key-here"
 PORT=3000
+DB=postgres  # 또는 "memory" (테스트용)
 ```
+
+> 💡 **팁**: `.env.example` 파일을 참고하세요. `DB=memory`로 설정하면 실제 데이터베이스 없이도 실행할 수 있습니다 (테스트/개발용).
 
 ### 3. 데이터베이스 설정
 
@@ -336,75 +479,37 @@ test("회원가입 성공", async () => {
 ### 1. 테스트 용이성
 - 메모리 구현으로 빠른 단위 테스트
 - 실제 데이터베이스나 HTTP 서버 없이 비즈니스 로직 테스트 가능
+- 테스트 시 `MemoryUserRepo`를 사용하여 외부 의존성 제거
 
 ### 2. 유연성
 - 데이터베이스 교체 (PostgreSQL → MongoDB) 시 어댑터만 변경
 - 웹 프레임워크 교체 (Fastify → Express) 시 HTTP 어댑터만 변경
 - 비즈니스 로직은 변경 불필요
+- 환경변수로 DB 구현체를 런타임에 선택 가능 (`DB=memory|postgres`)
 
 ### 3. 유지보수성
 - 각 레이어의 책임이 명확
 - 의존성 방향이 단방향 (외부 → 내부)
 - 코드 변경 영향 범위가 제한적
+- 어댑터 교체 시 비즈니스 로직에 영향 없음
 
 ### 4. 프레임워크 독립성
 - 도메인과 애플리케이션 계층은 프레임워크에 의존하지 않음
 - 나중에 프레임워크를 교체해도 핵심 로직은 그대로 유지
+- 포트(인터페이스)만 구현하면 어떤 기술 스택이든 사용 가능
 
 ---
 
-## 📝 TODO
+## 📝 추가 개선 사항
 
-프로젝트 개선을 위한 TODO 항목들:
+프로젝트를 더욱 발전시키기 위한 선택적 개선 항목들:
 
-- [ ] **테스트 프레임워크 추가** (Vitest/Jest)
-  - 단위 테스트 작성 (Services, Domain)
-  - 통합 테스트 작성 (HTTP Adapters)
-  - E2E 테스트 작성
-
-- [ ] **에러 핸들링 개선**
-  - 커스텀 에러 클래스 정의 (`DomainError`, `ValidationError` 등)
-  - 에러 응답 표준화
-  - 에러 로깅 전략 수립
-
-- [ ] **환경 변수 관리**
-  - `.env.example` 파일 추가
-  - 환경별 설정 파일 분리 (dev, prod, test)
-  - 환경 변수 검증 (Zod schema)
-
-- [ ] **로깅 전략**
-  - 구조화된 로깅 (Pino 등)
-  - 로그 레벨 관리
-  - 요청/응답 로깅 미들웨어
-
-- [ ] **DI 프레임워크 통합**
-  - `tsyringe` 또는 `typedi` 도입
-  - 데코레이터 기반 의존성 주입
-
-- [ ] **도메인 로직 강화**
-  - 도메인 엔티티에 비즈니스 규칙 메서드 추가
-  - Value Objects 패턴 적용
-  - 도메인 이벤트 추가
-
-- [ ] **API 문서 개선**
-  - 응답 스키마 정의
-  - 에러 응답 예시 추가
-  - 예제 요청/응답 추가
-
-- [ ] **성능 최적화**
-  - 데이터베이스 쿼리 최적화
-  - 캐싱 전략 (Redis 등)
-  - 페이징 구현
-
-- [ ] **보안 강화**
-  - Rate limiting
-  - CORS 설정
-  - 입력 sanitization
-
-- [ ] **CI/CD 파이프라인**
-  - GitHub Actions 설정
-  - 자동 테스트 실행
-  - 자동 배포
+- [ ] **Dockerfile** (멀티스테이지 빌드)
+- [ ] **Git hooks** (Husky + lint-staged)
+- [ ] **에러 응답 표준화** 미들웨어
+- [ ] **Pino 로깅** 기본 설정
+- [ ] **OpenAPI UI on/off** 플래그 (env)
+- [ ] **이슈/PR 템플릿** (`.github/`)
 
 ---
 
