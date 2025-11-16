@@ -37,7 +37,7 @@
 템플릿의 신뢰성을 위한 테스트 인프라
 
 - [x] Vitest 설정 (`vitest.config.ts`)
-- [x] 단위 테스트 예제 2-3개 (Memory*Repo 사용)
+- [x] 단위 테스트 예제 2-3개 (Memory\*Repo 사용)
   - [x] `UserService` 테스트 예제
   - [x] `AuthService` 테스트 예제
 - [x] 커버리지 스크립트 (`test:cov`)
@@ -67,12 +67,12 @@
 
 템플릿 품질 향상을 위한 추가 기능
 
-- [ ] Dockerfile (멀티스테이지 빌드)
-- [ ] Git hooks (Husky + lint-staged)
-- [ ] 에러 응답 표준화 미들웨어
-- [ ] Pino 로깅 기본 설정
-- [ ] OpenAPI UI on/off 플래그 (env)
-- [ ] 이슈/PR 템플릿 (`.github/`)
+- [x] Dockerfile (멀티스테이지 빌드)
+- [x] Git hooks (Husky + lint-staged)
+- [x] 에러 응답 표준화 미들웨어
+- [x] Pino 로깅 기본 설정
+- [x] OpenAPI UI on/off 플래그 (env)
+- [x] 이슈/PR 템플릿 (`.github/`)
 
 ---
 

@@ -5,6 +5,10 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1).default("secret"),
   PORT: z.coerce.number().default(3000),
   DB: z.enum(["memory", "postgres"]).default("postgres"),
+  ENABLE_SWAGGER_UI: z
+    .string()
+    .default("true")
+    .transform((val) => val === "true" || val === "1"),
 });
 
 export type Config = z.infer<typeof envSchema>;
