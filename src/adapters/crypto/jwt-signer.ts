@@ -6,7 +6,11 @@ export class JwtSigner implements TokenSigner {
   sign(payload: object, expiresInSec: number): string {
     return jwt.sign(payload, this.secret, { expiresIn: expiresInSec });
   }
-  verify<T = any>(token: string): T {
-    return jwt.verify(token, this.secret) as T;
+  verify<T = any>(token: string): T | null {
+    try {
+      return jwt.verify(token, this.secret) as T;
+    } catch {
+      return null;
+    }
   }
 }

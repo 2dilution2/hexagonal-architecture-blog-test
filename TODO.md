@@ -36,14 +36,14 @@
 
 템플릿의 신뢰성을 위한 테스트 인프라
 
-- [ ] Vitest 설정 (`vitest.config.ts`)
-- [ ] 단위 테스트 예제 2-3개 (Memory*Repo 사용)
-  - [ ] `UserService` 테스트 예제
-  - [ ] `AuthService` 테스트 예제
-- [ ] 커버리지 스크립트 (`test:cov`)
-- [ ] GitHub Actions: `ci.yml` (lint, build, test, prisma check)
+- [x] Vitest 설정 (`vitest.config.ts`)
+- [x] 단위 테스트 예제 2-3개 (Memory*Repo 사용)
+  - [x] `UserService` 테스트 예제
+  - [x] `AuthService` 테스트 예제
+- [x] 커버리지 스크립트 (`test:cov`)
+- [x] GitHub Actions: `ci.yml` (lint, build, test, prisma check)
 
-**완료 기준**: `npm test` 실행 시 테스트 통과 및 CI 자동 실행
+**완료 기준**: `npm test` 실행 시 테스트 통과 및 CI 자동 실행 ✅
 
 ---
 
@@ -75,8 +75,8 @@
 
 ## 최종 완료 기준
 
-- [ ] 템플릿 복제 후 `npm i && npm run dev` 바로 동작
-- [ ] `.env.example`만 채워도 핵심 기능 실행
-- [ ] `npm test` 성공
+- [x] 템플릿 복제 후 `npm i && npm run dev` 바로 동작
+- [x] `.env.example`만 채워도 핵심 기능 실행
+- [x] `npm test` 성공
 - [ ] README에 교체 포인트 명시 (DI/DB/HTTP)
-- [ ] CI 자동 실행 및 통과
+- [x] CI 자동 실행 및 통과

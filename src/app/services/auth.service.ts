@@ -36,7 +36,7 @@ export class AuthService {
 
   async refresh(input: RefreshDto) {
     const data = RefreshDto.parse(input);
-    const payload = this.jwt.verify(data.refreshToken);
+    const payload = this.jwt.verify<{ sub: string }>(data.refreshToken);
     if (!payload) throw new Error("INVALID_REFRESH_TOKEN");
 
     const entry = await this.refreshRepo.find(data.refreshToken);
